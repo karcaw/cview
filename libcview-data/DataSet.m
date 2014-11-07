@@ -81,6 +81,8 @@ All rights reserved.
 	width=w;
 	height=h;
 	data = [[NSMutableData alloc] initWithLength: w*h*sizeof(float)];
+	rowtotals = [[NSMutableData alloc] initWithLength: h*sizeof(float)];
+	coltotals = [[NSMutableData alloc] initWithLength: w*sizeof(float)];
 	currentMax = 1.0;
 	if (currentLimit==0.0)
 		currentLimit = DS_DEFAULT_LIMIT;
@@ -162,6 +164,8 @@ All rights reserved.
 	[dataLock autorelease];
 	[labelFormat autorelease];
 	[data autorelease];
+	[coltotals autorelease];
+	[rowtotals autorelease];
 	[name autorelease];
 	[rateSuffix autorelease];
 	[super dealloc];
@@ -179,6 +183,14 @@ All rights reserved.
 
 - (NSData *)dataObject {
 	return data;
+}
+
+- (NSData *)columnTotals {
+	return coltotals;
+}
+
+- (NSData *)rowTotals {
+	return rowtotals;
 }
 
 - shiftData: (int)num {
@@ -203,10 +215,10 @@ All rights reserved.
 	else {
 		fsa = abs(num);
 		tsa = 0;
-		zero = width-abs(num);
+		zero = height-abs(num);
 	}
 	for (i=0;i<width;i++) {
-		//if (i==0) NSLog(@"Shift: %p %p %d",d+i*height+fsa,d+i*height+tsa,sizeof(float)*(height-abs(num)));
+		if (i==0) NSLog(@"Shift: %p %p %d",d+i*height+fsa,d+i*height+tsa,sizeof(float)*(height-abs(num)));
 		memmove(d+i*height+tsa,d+i*height+fsa,sizeof(float)*(height-abs(num)));
 		memset(d+i*height+zero,0,sizeof(float)*abs(num));
 	}
@@ -235,10 +247,30 @@ All rights reserved.
 	return nil;
 }
 
+- (float)calculateStatistics {
+	//Calculate All Statistics here.  Should be called with the dataLock held
+	int row,col;
+	float cell,max=0.000001;
+	float *ct = (float *)[coltotals mutableBytes];
+	float *rt = (float *)[rowtotals mutableBytes];
+	float *d = (float *)[data mutableBytes];
+	memset(ct,0,width*sizeof(float));
+	memset(rt,0,height*sizeof(float));
+	for (row=0;row<width;row++)
+		for (col=0;col<height;col++) {
+			cell=d[row*height+col];
+			rt[col] += cell;
+			ct[row] += cell;
+			max = MAX(max,cell);
+		}
+	return max;
+}
+
 - (float)resetMax {
-	int i;
+	float max;
 	L();
 	[dataLock lock];
+	max = [self calculateStatistics];
 	//NSLog(@"allowScaling: %d",allowScaling);
 	if (lockedMax > 0.0) {
 		currentMax=lockedMax;
@@ -247,10 +279,10 @@ All rights reserved.
 		return lockedMax;
 	}
 	///@todo lameway to get max FIXME?
-	float *d = (float *)[data mutableBytes];
-	float max = 0.001;
-	for (i=0;i<width*height;i++)
-		max = MAX(max,d[i]);
+	//float *d = (float *)[data mutableBytes];
+	//float max = 0.001;
+	//for (i=0;i<width*height;i++)
+	//	max = MAX(max,d[i]);
 	//NSLog(@"The Max(%@): %f",name,max);
 
 	currentMax=max;

@@ -88,6 +88,7 @@ This class provides a basic data store, with associated information.  It is orga
 @interface DataSet: NSObject <PList> {
 	NSString *name;
 	NSMutableData *data; ///< float based 2d array, data is stored prescaled by the currentScale scale.  so a datapoint of 100.0 and a currentScale of .25 is stored as 25.0
+	NSMutableData *rowtotals,*coltotals; /// Array for accumulating the total across the two axis
 	int width,height;
 	int currentLimit; ///< the 'size' of the data in the z direction or how high the data should be...
 	NSString *rateSuffix;
@@ -107,6 +108,8 @@ This class provides a basic data store, with associated information.  It is orga
 - (float *)dataRow: (int)row;
 /** get the entire dataset as a float array */
 - (float *)data;
+- (NSData *)columnTotals;
+- (NSData *)rowTotals;
 - (NSData *)dataObject;
 /** move the data up in the data space, throwing away the extra, and zeroing the new space*/
 - shiftData: (int)num;
@@ -118,6 +121,8 @@ This class provides a basic data store, with associated information.  It is orga
 - (NSDictionary *)columnMeta: (int)col;
 /** return the maimum value of the data set */ 
 - (float)getMax;
+/** calculate max, and total vector */
+- (float)calculateStatistics;
 /** recalculate stored maximum values */
 - (float)resetMax;
 - lockMax: (int)max;
@@ -129,7 +134,7 @@ This class provides a basic data store, with associated information.  It is orga
 - setLabelFormat: (NSString *)fmt;
 /** replace the data in the dataset with a new one */
 - setNewData: (NSData *)data;
--setDescription: (NSString *)description;
+- setDescription: (NSString *)description;
 - (NSString *)getDescription;
 - setRate:(NSString *)r;
 -(NSString *)getRate;
@@ -145,6 +150,6 @@ This class provides a basic data store, with associated information.  It is orga
 /** report data valid status */
 - (BOOL)dataValid;
 /** Return the key that references this dataSet in the ValueDataStore */
--(NSString*)valueStoreKey;
+- (NSString*)valueStoreKey;
 @end
 

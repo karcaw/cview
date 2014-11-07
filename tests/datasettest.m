@@ -59,14 +59,25 @@ All rights reserved.
 #import <Foundation/Foundation.h>
 #include "SinDataSet.h"
 
+int dumpFloats(NSData *data) {
+	int i,len;
+	const float *d=[data bytes];
+
+	len = [data length]/sizeof(float);
+	for (i=0;i<len;i++)
+		printf("%f ",d[i]);
+	printf("\n");
+	return 0;
+}
+
 int dump(DataSet *data) {
 	int i,j;
 	float *d;
 
-	for (i=0;i<10;i++) {
+	for (i=0;i<[data width];i++) {
 		printf("%3d: ",i);
 		d = [data dataRow: i];
-		for (j=0;j<10;j++)
+		for (j=0;j<[data height];j++)
 			printf("%f ",d[j]);
 		printf("\n");
 	}
@@ -80,15 +91,25 @@ int main(int argc,char *argv[], char *env[]) {
 	[NSProcessInfo initializeWithArguments: argv count: argc environment: env ];
 #endif
 	@try {
-		SinDataSet *data = [[SinDataSet alloc] initWithName: @"Test" Width: 10 Height: 10];	
-	
+		SinDataSet *data = [[SinDataSet alloc] initWithName: @"Test" Width: 8 Height: 6];	
+		float *d = [data data];
+		int i;
+		for (i=0;i<8*6;i++)
+			d[i]=i;
+		//d[14]=10;
+		//d[15]=20;
+		//d[16]=30;
+		//d[24]=17;
+
 		dump(data);
 		[data shiftData: -2];
+		dump(data);
 		[data shiftData: 1];
+		dump(data);
 		NSLog(@"Should see an Error Here");
 		[data shiftData: -100];
-		dump(data);
-	
+
+		[data resetMax];
 		NSLog(@"Max: %f",[data getMax]);
 		NSLog(@"Rate: %@",[data getRate]);
 		NSLog(@"PList: %@",[data getPList]);
@@ -96,6 +117,10 @@ int main(int argc,char *argv[], char *env[]) {
 		[data setLabelFormat: @"%40.5f %@"];
 		NSLog(@"GetLabel: %@",[data getLabel: 1343203.4]);
 		NSLog(@"PList: %@",[data getPList]);
+		NSLog(@"Column Totals");
+		dumpFloats([data columnTotals]);
+		NSLog(@"Row Totals");
+		dumpFloats([data rowTotals]);
 	}
 	@catch (NSException *localException) {
 		NSLog(@"Error: %@", localException);
