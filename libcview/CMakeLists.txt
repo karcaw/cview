@@ -6,6 +6,7 @@ SET(CVIEW_DATA_CLASSES
 	Eye
 	GimpGradient
 	GLBar
+	GLChart
 	GLGrid
 	GLImage
 	GLInfinibandNetwork

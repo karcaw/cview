@@ -67,7 +67,7 @@ All rights reserved.
 	dx=0.0;
 	rateSuffix=@"Nums";
 	currentMax=100.0;
-  mult=50.0;
+	mult=50.0;
 	
 	[[UpdateRunLoop runLoop] addTimer: 
 								[[NSTimer alloc] initWithFireDate: [NSDate dateWithTimeIntervalSinceNow: 1] 

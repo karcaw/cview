@@ -2,7 +2,7 @@
 
 This file is part of the CVIEW graphics system, which is goverened by the following License
 
-Copyright © 2008,2009, Battelle Memorial Institute
+Copyright © 2008-2014, Battelle Memorial Institute
 All rights reserved.
 
 1.	Battelle Memorial Institute (hereinafter Battelle) hereby grants permission
@@ -56,46 +56,104 @@ All rights reserved.
 	not infringe privately owned rights.  
 
 */
+/** 
+This class implements the gl drawing code to show a graph of lines above a lower base plane, with X and Y labels, with a z-axix tower showing the height of the data.  The data is provided by a DataSet class.  The coloring of the lines is provided by a self-created ColorMap class.
 
-#import <Foundation/Foundation.h>
-#import <sys/param.h>  //for max/min
-
-#import "DrawableObject.h"
-#import "Scene.h"
-#import "Eye.h"
-#import "GLWorld.h"
-#import "GLScreenDelegate.h"
-#import "GLScreen.h"
-#import "DefaultGLScreenDelegate.h"
-#import "ColorMap.h"
-#import "GLChart.h"
-#import "GLGrid.h"
-#import "GLBar.h"
-#import "GLText.h"
-#import "GLImage.h"
-#import "Graph.h"
-#import "GimpGradient.h"
-#import "GLInfinibandNetwork.h"
-#import "cview-data.h"
-#import <math.h>
-
-/*This ties us to gcc, though intell compilers have _mm_* instruction 
-  that would work, and gcc supports them, but they add ugly castings.
+The class can display 4 types of Grid: Lines, Surfaces, Ribbons and Points.
+@author Evan Felix <evan.felix@pnl.gov>, (C) 2008
+@ingroup cview3d
 */
-#ifndef __FLTS__
-#define __FLTS__
-#ifdef __SSE__
-#include <xmmintrin.h>
-#endif
-typedef float v4sf __attribute__ ((vector_size (16)));
+#import <Foundation/Foundation.h>
+#import "DataSet.h"
+#import "ColorMap.h"
+#import "DrawableObject.h"
+#import "GLText.h"
+#import "GimpGradient.h"
+#define MAX_TICKS 10
 
-typedef union __flts {
-	v4sf v;
-	float f[4];
-} flts;
-#endif
-//Implemented in utils.m
-void drawString3D(float x,float y,float z,void *font,NSString *string,float offset);
-flts multQbyV(const flts *m,const flts v);
-void dumpV(flts f);
-int niceticks(double min,double max,double *ticks,int ticklen);
+/* dont use an enum here as we want to use certain bits, to define flags inside the numbers 
+ Byte - meaning
+  1   - Row(0) or column(1)
+  2   - Drawing type
+*/
+typedef unsigned int ChartTypesEnum;
+#define C_ROW_LINES  0x00
+#define C_COL_LINES  0x01
+#define C_ROW_POINTS 0x10
+#define C_COL_POINTS 0x11
+#define C_COUNT 4
+#define IS_LINES(x)  (((x)&0xF0)==0x00)
+#define IS_POINTS(x) (((x)&0xF0)==0x10)
+#define IS_ROW(x)    (((x)&0x0F)==0x00)
+#define IS_COL(x)    (((x)&0x0F)==0x01)
+
+#define C_LINES_STRING @"0"
+
+@interface GLChart: DrawableObject {
+	NSMutableArray *dataSets;
+	ColorMap *colorMap;
+	int xTicks,yTicks;
+	int axisTicks;
+	double currentTicks[MAX_TICKS];
+	int numTicks;
+	unsigned long tickMax;
+	int currentLen;
+	int chartWidth,chartHeight;
+	unsigned long currentMax;
+	NSMutableData *dataRow;
+	NSMutableData *colorRow;
+	GLText *descText;
+	float fontScale;
+	float fontColorR;
+	float fontColorG;
+	float fontColorB;
+	/**a gradient for the color map, a nil value means use the default map.*/
+	GimpGradient *ggr;
+	ChartTypesEnum chartType;
+	/** protect the dataSet member from being changed while we are reading it */
+	NSRecursiveLock *dataSetsLock;
+	float xbufpercent,ybufpercent;
+}
+-init;
+/** Create GLGrid with a dataset retrieved from the ValueStore, and a given drawing method*/
+-initWidth: (int)width andHeight: (int)height andType: (ChartTypesEnum)type;
+/** Create GLGrid with a dataset retrieved from the ValueStore */
+-initWidth: (int)width andHeight: (int)height;
+
+/** change the dataSet displayed */
+-addDataSetKey: (NSString *)key;
+-(void)receiveResizeNotification: (NSNotification *)notification;
+-(void)resetDrawingArrays;
+/** get the current dataset keys */
+-(NSArray *)getDataSetKeys;
+-setWidth: (int) width;
+-setHeight: (int) height;
+-(int)width;
+-(int)height;
+-glDraw;
+/** draw the overall grid description text */
+-drawTitles;
+/** draw the z axis tower with appropriate ticks */
+-drawAxis;
+/** set the delta between each tick drawing on the X axis*/
+-setXTicks: (int) delta;
+/** set the delta between each tick drawing on the Y axis*/
+-setYTicks: (int) delta;
+-(int)xTicks;
+-(int)yTicks;
+/** set the scaling of the descriptive text */
+-setFontScale:(float)scale;
+-(float)fontScale;
+/**Set the current type of grid to display*/
+-(void)setChartType:(ChartTypesEnum)code;
+/**Returns the current Type of Grid being Displayed*/
+-(ChartTypesEnum)getChartType;
+/** draw the data lines*/
+-drawLines;
+/** draw the data lines*/
+-drawPoints;
+/** set the Gradient for color mapping */
+-setGradient: (GimpGradient *)gradient;
+/** retrieve the current gradient */
+-getGradient;
+@end
