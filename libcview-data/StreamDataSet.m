@@ -307,6 +307,7 @@ All rights reserved.
     do {
       //NSLog(@"getting Next Line");
       arr = [self getNextLineArray];
+      
       //NSLog(@"Return: %@",arr);
       if (arr == nil) {
         //running = NO;

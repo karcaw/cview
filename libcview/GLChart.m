@@ -103,8 +103,7 @@ static const char *chartTypeSelectors[] =	{
 	fontColorR = 1.0;
 	fontColorG = 1.0;
 	fontColorB = 1.0;
-	xTicks=[Defaults integerForKey:@"xTicks" Id:self];
-	yTicks=[Defaults integerForKey:@"yTicks" Id:self];
+	ticks=[Defaults integerForKey:@"ticks" Id:self];
 	axisTicks=6;
 	tickMax=1.0;
 	currentTicks[0]=0.0;
@@ -149,7 +148,7 @@ static const char *chartTypeSelectors[] =	{
 
 -(void)resetDrawingArrays {
 	float *d;
-	int i,j,len;
+	int i,len;
 	NSEnumerator *list;
   	DataSet *ds;
 
@@ -158,11 +157,13 @@ static const char *chartTypeSelectors[] =	{
 	len=0;
   	list = [dataSets objectEnumerator];
   	ds = [list nextObject];
+  
   	if (IS_ROW(chartType))
   		currentLen = [ds height];
   	else if (IS_COL(chartType)) 
   		currentLen = [ds width];
-  	while ((ds = [list nextObject])) {
+
+    while ((ds = [list nextObject])) {
   		//verify width is same
   		if (IS_ROW(chartType))
   			len = [ds height];
@@ -178,7 +179,7 @@ static const char *chartTypeSelectors[] =	{
 	NSLog(@"dataRow: %lu",2*currentLen*sizeof(float));
 	colorRow = [[NSMutableData alloc] initWithLength: 4*currentLen*sizeof(float)];
 	d = (float *)[dataRow mutableBytes];
-	// setup drawable array... (0,unknown,rownum)
+	// setup drawable array... (xnum,unknown)
 	for (i=0;i<currentLen;i++)
 		d[i*2]=i;
 
@@ -197,13 +198,14 @@ static const char *chartTypeSelectors[] =	{
 	NSArray *keys;
 	[super initWithPList: list];
 	/// @todo error checking or exception handling.
-	xTicks = [Defaults integerForKey: @"xTicks" Id: self Override: list];
-	yTicks = [Defaults integerForKey: @"yTicks" Id: self Override:list];
+  ticks = [Defaults integerForKey: @"ticks" Id: self Override:list];
 	fontScale = [Defaults floatForKey: @"fontScale" Id: self Override: list];
 	fontColorR = [Defaults floatForKey: @"fontColorR" Id: self Override: list];
 	fontColorG = [Defaults floatForKey: @"fontColorG" Id: self Override: list];
 	fontColorB = [Defaults floatForKey: @"fontColorB" Id: self Override: list];
 	chartType = [Defaults integerForKey: @"chartType" Id: self Override:list];
+  chartHeight = [Defaults integerForKey: @"chartHeight" Id: self Override:list];
+  chartWidth = [Defaults integerForKey: @"chartWidth" Id: self Override:list];
 		
 	o = [list objectForKey: @"gradient" missing: nil];
 	if (o!=nil)
@@ -225,13 +227,14 @@ static const char *chartTypeSelectors[] =	{
 -getPList {
 	NSLog(@"getPList: %@",self);
 	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary: [super getPList]];
-	PLIST_SET_IF_NOT_DEFAULT_INT(dict, xTicks);
-	PLIST_SET_IF_NOT_DEFAULT_INT(dict, yTicks);
+	PLIST_SET_IF_NOT_DEFAULT_INT(dict, ticks);
 	PLIST_SET_IF_NOT_DEFAULT_FLT(dict, fontScale);
 	PLIST_SET_IF_NOT_DEFAULT_FLT(dict, fontColorR);
 	PLIST_SET_IF_NOT_DEFAULT_FLT(dict, fontColorG);
 	PLIST_SET_IF_NOT_DEFAULT_FLT(dict, fontColorB);
-	PLIST_SET_IF_NOT_DEFAULT_INT(dict, chartType);
+  PLIST_SET_IF_NOT_DEFAULT_INT(dict, chartType);
+  PLIST_SET_IF_NOT_DEFAULT_INT(dict, chartWidth);
+  PLIST_SET_IF_NOT_DEFAULT_INT(dict, chartHeight);
 
 	[dict setObject: [dataSets  arrayObjectsFromPerformedSelector: @selector(valueStoreKey)] forKey:@"valueStoreDataSetKeys"];
 	if (ggr != nil)
@@ -241,14 +244,13 @@ static const char *chartTypeSelectors[] =	{
 
 -(NSArray *)attributeKeys {
 	//isVisible comes from the DrawableObject
-	return [NSArray arrayWithObjects: @"isVisible",@"xTicks",@"yTicks",@"fontScale",
+	return [NSArray arrayWithObjects: @"isVisible",@"ticks",@"fontScale",
 					@"fontColorR",@"fontColorG",@"fontColorB",@"chartType",@"axisTicks",nil];
 }
 
 -(NSDictionary *)tweaksettings {
 	return [NSDictionary dictionaryWithObjectsAndKeys:
-		[NSString stringWithFormat: @"help='Tick separation in the X direction' min=0 max=%d step=1 precision=0",10],@"xTicks",
-		[NSString stringWithFormat: @"help='Tick separation in the Y direction' min=0 max=%d step=1 precision=0",10],@"yTicks",
+		[NSString stringWithFormat: @"help='Tick separation in the X axis' min=0 max=%d step=1 precision=0",currentLen],@"ticks",
 		@"help='scaling of the descriptive font tile' min=0.1 max=4.0 precision=1 step=0.1",@"fontScale",
 		@"min=0 max=1",@"isVisible",
 		@"step=0.1",@"dxmult",
@@ -392,76 +394,42 @@ static const char *chartTypeSelectors[] =	{
 	for (i=0;i<numTicks;i++) 
 		drawString3D(0.0,ybufpercent+(100-ybufpercent)*currentTicks[i]/tickMax,0,GLUT_BITMAP_HELVETICA_12,[ds getLabel: currentTicks[i]],0.0);
 
+  if (ticks) {
+    int dropit=1;
+    float delta;
+    
+    delta=(100-xbufpercent)/currentLen;
+    glBegin(GL_LINES);
+    for (i = 0;i < currentLen; i += ticks) {
+      glVertex2f(xbufpercent+i*delta,ybufpercent);
+      glVertex2f(xbufpercent+i*delta,ybufpercent-dropit);
+    }
+    glEnd();
+    
+    for (i = 0;i < currentLen; i += ticks) {
+      NSString *str = @"...";
+      if (IS_ROW(chartType))
+        str = [ds rowTick: i];
+      else if (IS_COL(chartType))
+        str = [ds columnTick: i];
+      
+      glColor3f(fontColorR,fontColorG,fontColorB);
+      drawString3D(xbufpercent+i*delta,ybufpercent - dropit - 2,0,GLUT_BITMAP_HELVETICA_12,str,0);
+    }
+    
+  }
+  
 	glPopMatrix();
 
 	return self;
 }
 
--drawPlane {
-/*	float dropit=-1.5;
-	int i,w,h;
-	w=[dataSet width];
-	h=[dataSet height];
-
-	glColor3f(0.5,0.0,0.0);
-
-	glPolygonOffset(dzmult,rmult);
-	glPushMatrix();
-	glScalef(xscale,yscale,zscale);
-	glBegin(GL_QUADS);
-
-	//glNormal3f(0.0, -1.0, 0.0);
-	glVertex3f(0, dropit, 0 );
-	glVertex3f(0, dropit, h );
-	glVertex3f(w, dropit, h );
-	glVertex3f(w, dropit, 0 );
-
-	glEnd();
-
-	glColor3f(fontColorR,fontColorG,fontColorB);
-	if (yTicks) {
-		int p = w;
-		glBegin(GL_LINES);
-		for (i = 0;i < h;i += yTicks) {
-			glVertex3f(p,0.0,i);
-			glVertex3f(p+2.0/xscale,0,i);
-		}
-		glEnd();
-		for (i = 0;i < h;i += yTicks) {
-			NSString *str = [dataSet rowTick: i];
-			drawString3D(p+2.5/xscale,0,i,GLUT_BITMAP_HELVETICA_12,str,0);
-		}
-	}
-	if (xTicks) {
-		int p = h;
-		glBegin(GL_LINES);
-		for (i = 0;i < w; i += xTicks) {
-			glVertex3f(i,dropit,p);
-			glVertex3f(i,dropit,p+2.0/zscale);
-		}
-		glEnd();
-		for (i = 0;i < w; i += xTicks) {
-			NSString *str = [dataSet columnTick: i];
-			drawString3D(i,dropit,p+12/zscale,GLUT_BITMAP_HELVETICA_12,str,0);
-		}
-	}
-	glPopMatrix();*/
+-setTicks: (int) delta {
+	ticks = delta;
 	return self;
 }
-
--setXTicks: (int) delta {
-	xTicks = delta;
-	return self;
-}
--setYTicks: (int) delta {
-	yTicks = delta;
-	return self;
-}
--(int)xTicks {
-	return xTicks;
-}
--(int)yTicks {
-	return yTicks;
+-(int)Ticks {
+	return ticks;
 }
 -setFontScale:(float)scale {
 	fontScale=scale;
@@ -523,68 +491,53 @@ static const char *chartTypeSelectors[] =	{
 -(int)height {
 	return chartHeight;
 }
+
 -drawRowAvgLines {
+  NSEnumerator *list;
+  DataSet *ds;
+  NSData *data;
+  float *d;
+  float *verts;
+  int i;
+  float numrows;
+  
+  verts = [dataRow mutableBytes];
+  
+  list = [dataSets objectEnumerator];
+  while ((ds = [list nextObject])) {
+    data = [ds rowTotals];
+    numrows = [ds width];
+    
+    d = (float *)[data bytes];
+    for (i=0;i<currentLen;i++)
+      verts[i*2+1]=d[i]/numrows;
+    NSLog(@"conv: %f => %f",d[0],verts[1]);
+    [self drawLine: verts];
+  }
+
+  
 	return self;
 }
--drawLines {
-/*	int i,j;
-	int w,h;
-	float *dl;
-	float *verts;
-	int prevPoint=0;
-	float prevValue;
-	int countPoints;
-	verts = [dataRow mutableBytes];
-
+-drawLine: (float *)verts; {
+	
+  
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
+	//glEnableClientState(GL_COLOR_ARRAY);
 	glPushMatrix();
-	glScalef(xscale,yscale*100.0/tickMax,zscale);
+	
+  glScalef(chartWidth/100.0,-chartHeight/100.0,1.0);
+  glTranslatef(xbufpercent,-(100.0-ybufpercent),0);
+  glScalef((100.0-xbufpercent)/currentLen,(100.0-ybufpercent)/100.0,1.0);
+  
+  
+  
+	glVertexPointer(2, GL_FLOAT, 0, verts);
+	//glColorPointer(4, GL_FLOAT, 0, [colorRow mutableBytes]);
 
-	glVertexPointer(3, GL_FLOAT, 0, verts);
-	glColorPointer(4, GL_FLOAT, 0, [colorRow mutableBytes]);
+  glColor3f(1.0,1.0,1.0);
+  glDrawArrays(GL_LINE_STRIP,0,currentLen);
 
-	w=[dataSet width];
-	h=[dataSet height];
-
-	for (i=0;i<w;i++) {
-		dl=[dataSet dataRow: i];
-
-		/// @todo is there a gooder way to draw all the lines?
-		verts[2] = 0;
-		verts[1] = prevValue = dl[0];
-		verts[0] = (float)i;
-		countPoints = 1;
-		prevPoint=0;
-		for (j=1;j<h;j++) { 
-			if(prevValue != dl[j]) {
-				if(j-1 != prevPoint) {
-					verts[countPoints*3+2] = (float)j-1;
-					verts[countPoints*3+1] = prevValue;
-					verts[countPoints*3+0] = (float)i;
-					countPoints++;
-				}
-				verts[countPoints*3+2] = (float)j;
-				verts[countPoints*3+1] = dl[j];
-				verts[countPoints*3+0] = (float)i;
-				countPoints++;
-				prevValue = dl[j];
-				prevPoint = j;
-			}
-		}
-		if(j-1 != prevPoint) {
-			verts[countPoints*3+2] = (float)j-1;
-			verts[countPoints*3+1] = dl[j-1];
-			verts[countPoints*3+0] = (float)i;
-			countPoints++;
-		}
-		
-		[colorMap doMapWithPoints: verts thatHasLength: countPoints toColors: [colorRow mutableBytes]];
-
-		glDrawArrays(GL_LINE_STRIP,0,countPoints);
-	}
-
-	glPopMatrix();*/
+	glPopMatrix();
 	return self;
 }
 

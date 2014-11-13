@@ -99,6 +99,7 @@ All rights reserved.
 	for (j=0;j<height;j++)
 			d[j]=50;
 
+  [self calculateStatistics];
 	[[NSNotificationCenter defaultCenter] postNotificationName: @"DataSetUpdate" object: self];
 	return NO;
 }

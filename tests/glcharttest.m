@@ -80,7 +80,7 @@ int main(int argc,char *argv[], char *env[]) {
 	[[ValueStore valueStore] setKey: @"ds2" withObject: ds2];
   
 	GLScreen * g = [[GLScreen alloc] initName: @"GLChart Test"];
-	GLChart *chart = [[[[GLChart alloc] initWidth: 300 andHeight: 300 andType: C_ROW_LINES] setXTicks: 50] setYTicks: 16];
+	GLChart *chart = [[[GLChart alloc] initWidth: 300 andHeight: 300 andType: C_ROW_LINES] setTicks: 50];
 	[chart addDataSetKey: @"ds"];
 	[chart addDataSetKey: @"ds2"];
 	Scene *scene = [[Scene alloc] init];

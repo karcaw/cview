@@ -218,7 +218,7 @@ All rights reserved.
 		zero = height-abs(num);
 	}
 	for (i=0;i<width;i++) {
-		if (i==0) NSLog(@"Shift: %p %p %d",d+i*height+fsa,d+i*height+tsa,sizeof(float)*(height-abs(num)));
+	//	if (i==0) NSLog(@"Shift: %p %p %d",d+i*height+fsa,d+i*height+tsa,sizeof(float)*(height-abs(num)));
 		memmove(d+i*height+tsa,d+i*height+fsa,sizeof(float)*(height-abs(num)));
 		memset(d+i*height+zero,0,sizeof(float)*abs(num));
 	}

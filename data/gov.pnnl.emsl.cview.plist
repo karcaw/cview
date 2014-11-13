@@ -2,6 +2,15 @@
 	"Eye.strafe_speed" = 10;
 	"Eye.rotate_speed" = 0.025;
 	"Eye.move_speed" = 10;
+	"GLChart.ticks" = 20;
+	"GLChart.fontScale" = 1;
+	"GLChart.fontColorR" = 1;
+	"GLChart.fontColorG" = 1;
+	"GLChart.fontColorB" = 1;
+	"GLChart.chartType" = 0;
+	"GLChart.chartWidth" = 400;
+	"GLChart.chartHeight" = 300;
+	"GLChart.isVisible" = YES;
 	"GLGrid.xTicks" = 50;
 	"GLGrid.yTicks" = 32;
 	"GLGrid.fontScale" = 1;

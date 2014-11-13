@@ -92,7 +92,7 @@ typedef unsigned int ChartTypesEnum;
 @interface GLChart: DrawableObject {
 	NSMutableArray *dataSets;
 	ColorMap *colorMap;
-	int xTicks,yTicks;
+	int ticks;
 	int axisTicks;
 	double currentTicks[MAX_TICKS];
 	int numTicks;
@@ -136,11 +136,8 @@ typedef unsigned int ChartTypesEnum;
 /** draw the z axis tower with appropriate ticks */
 -drawAxis;
 /** set the delta between each tick drawing on the X axis*/
--setXTicks: (int) delta;
-/** set the delta between each tick drawing on the Y axis*/
--setYTicks: (int) delta;
--(int)xTicks;
--(int)yTicks;
+-setTicks: (int) delta;
+-(int)Ticks;
 /** set the scaling of the descriptive text */
 -setFontScale:(float)scale;
 -(float)fontScale;
@@ -148,10 +145,9 @@ typedef unsigned int ChartTypesEnum;
 -(void)setChartType:(ChartTypesEnum)code;
 /**Returns the current Type of Grid being Displayed*/
 -(ChartTypesEnum)getChartType;
+-drawRowAvgLines;
 /** draw the data lines*/
--drawLines;
-/** draw the data lines*/
--drawPoints;
+-drawLine: (float *)verts;
 /** set the Gradient for color mapping */
 -setGradient: (GimpGradient *)gradient;
 /** retrieve the current gradient */
