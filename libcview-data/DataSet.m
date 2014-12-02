@@ -250,6 +250,7 @@ All rights reserved.
 - (float)calculateStatistics {
 	//Calculate All Statistics here.  Should be called with the dataLock held
 	int row,col;
+	//NSLog(@"calc: w:%d h:%d ctlen: %d rtlen: %d",width,height,[coltotals length],[rowtotals length]);
 	float cell,max=0.000001;
 	float *ct = (float *)[coltotals mutableBytes];
 	float *rt = (float *)[rowtotals mutableBytes];
@@ -379,6 +380,9 @@ All rights reserved.
 	[dataLock lock];
 	width=newWidth;
 	[data setLength: width*height*sizeof(float)];
+	[coltotals autorelease];
+	coltotals = [[NSMutableData alloc] initWithLength: width*sizeof(float)];
+	
 	U();
 	[dataLock unlock];
 	[[NSNotificationCenter defaultCenter] postNotificationName: @"DataSetResize" object: self];
@@ -400,6 +404,9 @@ All rights reserved.
 		[data setData: d];
 	}
 	height = newHeight;
+	[rowtotals autorelease];
+	rowtotals = [[NSMutableData alloc] initWithLength: height*sizeof(float)];
+	
 	U();
 	[dataLock unlock];
 	[[NSNotificationCenter defaultCenter] postNotificationName: @"DataSetResize" object: self];
