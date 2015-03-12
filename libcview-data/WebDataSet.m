@@ -176,7 +176,9 @@ static float blankdata[] = {
 }
 
 -(NSArray *)attributeKeys {
-	return [NSArray arrayWithObjects: @"baseURL",@"dataKey",nil];
+  NSArray *k = [super attributeKeys];
+	NSArray *n = [NSArray arrayWithObjects: @"baseURL",@"dataKey",nil];
+  return [n arrayByAddingObjectsFromArray:k];
 }
 
 -(void)dealloc {

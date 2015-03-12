@@ -96,6 +96,7 @@ This class provides a basic data store, with associated information.  It is orga
 	float lockedMax;
 	BOOL dataValid;
 	BOOL isCustomTextDescription;
+  BOOL zeroNegatives;
 	NSString *textDescription;
 	NSString *labelFormat;
 	NSRecursiveLock *dataLock;
@@ -151,5 +152,8 @@ This class provides a basic data store, with associated information.  It is orga
 - (BOOL)dataValid;
 /** Return the key that references this dataSet in the ValueDataStore */
 - (NSString*)valueStoreKey;
+/** set a flag to set datapoints to zero that are less than 0 */
+- (void)setZeroNegatives: (BOOL)flag;
+- (BOOL)getZeroNegatives;
 @end
 

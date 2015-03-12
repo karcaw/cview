@@ -62,6 +62,7 @@ All rights reserved.
 #import "DictionaryExtra.h"
 #import "math.h"
 #import "ValueStore.h"
+#import "Defaults.h"
 
 
 @implementation DataSet
@@ -136,6 +137,7 @@ All rights reserved.
 	rateSuffix=[list objectForKey:@"rateSuffix" missing: DS_DEFAULT_RATE_SUFFIX];
 	textDescription=[[list objectForKey:@"textDescription" missing: nil] retain];
 	isCustomTextDescription = textDescription != nil;
+  zeroNegatives = [Defaults boolForKey: @"zeroNegatives" Id: self Override: list];
 	return self;
 }
 
@@ -152,12 +154,13 @@ All rights reserved.
 		[dict setObject: name forKey: @"name"];
 	if ([rateSuffix compare: DS_DEFAULT_RATE_SUFFIX] != NSOrderedSame )
 		[dict setObject: rateSuffix forKey: @"rateSuffix"];
+  PLIST_SET_IF_NOT_DEFAULT_BOOL(dict,zeroNegatives);
 	return dict;
 }
 
 -(NSArray *)attributeKeys {
 	//isVisible comes from the DrawableObject
-	return [NSArray arrayWithObjects: @"lockedMax",@"labelFormat",@"rate",nil];
+	return [NSArray arrayWithObjects: @"lockedMax",@"labelFormat",@"rate",@"zeroNegatives",nil];
 }
 -(void)dealloc {
 	NSLog(@"DataSet dealloc: %@",name);
@@ -250,6 +253,7 @@ All rights reserved.
 - (float)calculateStatistics {
 	//Calculate All Statistics here.  Should be called with the dataLock held
 	int row,col;
+  BOOL zero = zeroNegatives; //copy flag so it doesent change mid scan
 	//NSLog(@"calc: w:%d h:%d ctlen: %d rtlen: %d",width,height,[coltotals length],[rowtotals length]);
 	float cell,max=0.000001;
 	float *ct = (float *)[coltotals mutableBytes];
@@ -262,6 +266,10 @@ All rights reserved.
 			cell=d[row*height+col];
 			rt[col] += cell;
 			ct[row] += cell;
+      if (cell < 0.0 && zero)
+        d[row*height+col] = 0.0;
+      if (lockedMax && cell>lockedMax)
+        d[row*height+col] = lockedMax;
 			max = MAX(max,cell);
 		}
 	return max;
@@ -418,6 +426,11 @@ All rights reserved.
 - (NSString*)valueStoreKey {
 	return [[ValueStore valueStore] getKeyForObject: self];
 }
-
+- (void)setZeroNegatives: (BOOL)flag {
+  zeroNegatives = flag;
+}
+- (BOOL)getZeroNegatives {
+  return zeroNegatives;
+}
 @end /* DataSet */
 

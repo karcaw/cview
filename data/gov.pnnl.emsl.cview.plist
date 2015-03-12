@@ -1,6 +1,7 @@
 {
+	"DataSet.zeroNegatives" = NO;
 	"Eye.strafe_speed" = 10;
-	"Eye.rotate_speed" = 0.025;
+	"Eye.rotate_speed" = "0.025";
 	"Eye.move_speed" = 10;
 	"GLChart.ticks" = 20;
 	"GLChart.fontScale" = 1;
@@ -39,7 +40,7 @@
 	"GLText.isVisible" = YES;
 	"GLText.string" = "Put Some Text Here";
 	"GLText.fontfile" = "LinLibertine_Re.ttf";
-	"GLWorld.imagePrefix" = "glworld";
+	"GLWorld.imagePrefix" = glworld;
 	"GLWorld.imageDir" = ".";
 	"GLWorld.imageDailyDir" = NO;
 	"GLWorld.imageCycleTime" = 0;
@@ -56,7 +57,7 @@
 	"SceneObject.halign" = 0;
 	"SceneObject.valign" = 0;
 	"SceneObject.align" = NO;
-	"TestClass.testfloat" = 4.5;
+	"TestClass.testfloat" = "4.5";
 	"TestClass.testinteger" = 45;
 	"TestClass.teststring" = "A Cool String";
 }
