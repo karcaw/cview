@@ -1,4 +1,5 @@
 
+FIND_PACKAGE(PythonInterp)
 
 ADD_DEFINITIONS(${FOUNDATION_FLAGS})
 INCLUDE_DIRECTORIES(${GLUT_INCLUDE_DIR})
@@ -6,7 +7,7 @@ INCLUDE_DIRECTORIES(${GL_H_INCLUDE} ${OPENGL_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${FREETYPE_INCLUDE_DIR_freetype2})
 INCLUDE_DIRECTORIES(${FREETYPE_INCLUDE_DIR_ft2build})
 INCLUDE_DIRECTORIES(${FTGL_INCLUDE_DIRS})
-INCLUDE_DIRECTORIES(${WAND_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${ImageMagick_MagickWand_INCLUDE_DIR})
 
 MACRO(ADD_TEST name) 
 	MESSAGE("Adding Test for ${name}")
@@ -17,8 +18,6 @@ MACRO(ADD_TEST name)
 	ENDIF()
 	TARGET_LINK_LIBRARIES(${name} libcview libcview-data)
 ENDMACRO(ADD_TEST)
-
-LINK_DIRECTORIES(${WAND_LIBRARY_DIRS})
 
 ADD_TEST(calcdatasettest)
 ADD_TEST(datasettest)
@@ -33,14 +32,16 @@ ADD_TEST(ibtest)
 ADD_TEST(iddatabasetest)
 ADD_TEST(streamdatasettest)
 ADD_TEST(webdatasettest)
-ADD_TEST(xydatasettest)
 ADD_TEST(datasetloadtest)
 ADD_TEST(defaulttest)
+IF(${PYTHONINTERP_FOUND})
+	ADD_TEST(xydatasettest)
+
+	ADD_CUSTOM_COMMAND(OUTPUT testdata.xy COMMAND ${PYTHON_EXECUTABLE} funcdata xy testdata.xy COMMENT "Building Test XY Data")
+	ADD_CUSTOM_TARGET(buildtestdata ALL DEPENDS testdata.xy)
+ENDIF()
 
 ADD_EXECUTABLE(calcdatatest calcdatatest.c)
 TARGET_LINK_LIBRARIES(calcdatatest libcview-data)
 
 FILE(COPY slowcat funcdata streamdata.txt gimpgradient.ggr DESTINATION "${CMAKE_BINARY_DIR}/tests")
-
-ADD_CUSTOM_COMMAND(OUTPUT testdata.xy COMMAND python funcdata xy testdata.xy COMMENT "Building Test XY Data")
-ADD_CUSTOM_TARGET(buildtestdata ALL DEPENDS testdata.xy)
