@@ -357,8 +357,8 @@ static void TW_CALL CVASD_intGlobalSetCallback(const void *value, void *clientDa
 	NSArray *arr;
 	arr = [NSArray arrayWithObjects: self,[NSString stringWithUTF8String: name],[NSNumber numberWithBool: needsRepopulate],nil];
 	[tweakObjects addObject: arr];
-	TwSetVarCallback setCB;
-	TwGetVarCallback getCB;
+	TwSetVarCallback setCB=NULL;
+	TwGetVarCallback getCB=NULL;
 	switch(TYPE) {
 		case TW_TYPE_INT32:
 			setCB = CVASD_intGlobalSetCallback;

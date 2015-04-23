@@ -1,4 +1,5 @@
 {
+    "global.rasterFontSize" = 12;
 	"DataSet.zeroNegatives" = NO;
 	"Eye.strafe_speed" = 10;
 	"Eye.rotate_speed" = "0.025";
@@ -12,6 +13,8 @@
 	"GLChart.chartWidth" = 400;
 	"GLChart.chartHeight" = 300;
 	"GLChart.isVisible" = YES;
+	"GLGrid.xTickDistance" = "0.0";
+	"GLGrid.yTickDistance" = "0.0";
 	"GLGrid.xTicks" = 50;
 	"GLGrid.yTicks" = 32;
 	"GLGrid.fontScale" = 1;

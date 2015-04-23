@@ -221,6 +221,8 @@ All rights reserved.
 		d[x+y*width]=val;
 		//if (y==0)
 		//NSLog(@"scan: %p %p %d %d %f",ptr,end,x,y,val);
+		while (ptr < end && *ptr=='\n')
+			ptr++;
 	}
 	NSLog(@"XYDataSet Max: %d %d",MaxX,MaxY);
 	d=[self contractDataSetWidth: MaxX+1 andHeight: MaxY+1];//base zero
@@ -245,17 +247,9 @@ All rights reserved.
 	//NSLog(@"expand: %d %d %d    %d %d %d",w,width,nw,h,height,nh);
 	
 	if (nw!=width || nh!=height) {
-		[data setLength: sizeof(float)*nw*nh];
+		[self setHeight:nh];
+		[self setWidth:nw];
 		d = [data mutableBytes];
-		
-		if (nw!=width) {
-			for (r=height-1;r>0;r--) {
-				memcpy(d+r*nw,d+r*width,sizeof(float)*(width));
-				memset(d+r*width,0,sizeof(float)*(nw-width));
-			}
-		}
-		height=nh;
-		width=nw;
 	}
 	return d;
 }
@@ -277,7 +271,7 @@ All rights reserved.
 
 			for (r=1;r<width;r++) {
 				//NSLog(@"%d %d",r*nh,r*height);
-				memcpy(d+r*nh,d+r*height,sizeof(float)*nh);
+				memmove(d+r*nh,d+r*height,sizeof(float)*nh);
 			}
 		}
 #else

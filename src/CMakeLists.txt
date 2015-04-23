@@ -5,8 +5,7 @@ INCLUDE_DIRECTORIES(${GL_H_INCLUDE} ${OPENGL_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${FREETYPE_INCLUDE_DIR_freetype2})
 INCLUDE_DIRECTORIES(${FREETYPE_INCLUDE_DIR_ft2build})
 INCLUDE_DIRECTORIES(${FTGL_INCLUDE_DIRS})
-INCLUDE_DIRECTORIES(${WAND_INCLUDE_DIRS})
-
+INCLUDE_DIRECTORIES(${ImageMagick_MagickWand_INCLUDE_DIR})
 
 MACRO(ADD_PROG name)
 	MESSAGE("Adding executable ${name}")
@@ -22,8 +21,6 @@ ENDMACRO(ADD_PROG)
 IF(HAVE_GENDERS) 
 	LIST(APPEND CVIEW_EXTRA_SRC DataCenterCViewScreenDelegate.m)
 ENDIF()
-
-LINK_DIRECTORIES(${WAND_LIBRARY_DIRS})
 
 ADD_PROG(cview cview.m CViewScreenDelegate.m CViewScreenDelegate.m CViewScreenDelegate.m LoadClasses.m ObjectTracker.m ${CVIEW_EXTRA_SRC})
 ADD_PROG(cviewall cviewall.m CViewScreenDelegate.m LoadClasses.m CViewAllScreenDelegate.m) 
