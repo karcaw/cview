@@ -1,6 +1,6 @@
 /*
 
-This file is part of the CVIEW graphics system, which is goverened by the following License
+This file is port of the CVIEW graphics system, which is goverened by the following License
 
 Copyright © 2008,2009, Battelle Memorial Institute
 All rights reserved.
@@ -56,49 +56,45 @@ All rights reserved.
 	not infringe privately owned rights.  
 
 */
+#import "SinDataSet.h"
+#import "cview.h"
 
-#import <Foundation/Foundation.h>
-#import <sys/param.h>  //for max/min
-
-#import "DrawableObject.h"
-#import "Scene.h"
-#import "Eye.h"
-#import "GLWorld.h"
-#import "GLScreenDelegate.h"
-#import "GLScreen.h"
-#import "DefaultGLScreenDelegate.h"
-#import "ColorMap.h"
-#import "GLChart.h"
-#import "GLGrid.h"
-#import "GLBar.h"
-#import "GLText.h"
-#import "GLImage.h"
-#import "Graph.h"
-#import "GimpGradient.h"
-#import "GLInfinibandNetwork.h"
-#if MATHGL2_FOUND
-	#import "GLMathGL.h"
+int main(int argc,char *argv[], char *env[]) {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+#ifndef __APPLE__
+	//needed for NSLog
+	[NSProcessInfo initializeWithArguments: argv count: argc environment: env ];
 #endif
-#import "cview-data.h"
-#import <math.h>
+	GimpGradient *ggr;
+    NSString *testdata = find_resource_path(@"gimpgradient.ggr");
+    if (testdata == nil) {
+        NSLog(@"Error Loading Test Gradient");
+        exit(1);
+    }
+    
+    ggr = [[GimpGradient alloc] initWithFile: testdata];
+	SinDataSet *ds = [[SinDataSet alloc] initWithName: @"Sin()" Width: 1000 Height: 128 interval: 1.0];
+	SinDataSet *ds2 = [[SinDataSet alloc] initWithName: @"Sin()" Width: 500 Height: 128 interval: 1.0];
 
-/*This ties us to gcc, though intell compilers have _mm_* instruction 
-  that would work, and gcc supports them, but they add ugly castings.
-*/
-#ifndef __FLTS__
-#define __FLTS__
-#ifdef __SSE__
-#include <xmmintrin.h>
-#endif
-typedef float v4sf __attribute__ ((vector_size (16)));
+	[[ValueStore valueStore] setKey: @"ds" withObject: ds];
+	[[ValueStore valueStore] setKey: @"ds2" withObject: ds2];
+  
+	GLScreen * g = [[GLScreen alloc] initName: @"GLChart Test"];
+	GLMathGL *mgl = [[GLMathGL alloc] initWidth: 500 andHeight: 300];
+	[mgl addDataSetKey: @"ds"];
+	[mgl addDataSetKey: @"ds2"];
+	Scene *scene = [[Scene alloc] init];
 
-typedef union __flts {
-	v4sf v;
-	float f[4];
-} flts;
-#endif
-//Implemented in utils.m
-void drawString3D(float x,float y,float z,void *font,NSString *string,float offset);
-flts multQbyV(const flts *m,const flts v);
-void dumpV(flts f);
-int niceticks(double min,double max,double *ticks,int ticklen);
+	Scene *overlay = [[Scene alloc] initWithObject: mgl
+ 		alignHoriz: 0 Vert: 0];
+
+	[[[[g addWorld: @"TL" row: 0 col: 0 rowPercent: 50 colPercent:50] 
+		setScene: scene] 
+		setOverlay: overlay]
+		setEye: [[[Eye alloc] init] setX: 50.0 Y: 800.0 Z: 800.0 Hangle:-4.8 Vangle: -2.47]
+	];
+	[g run];
+	[pool release];
+	return 0;
+}
+
