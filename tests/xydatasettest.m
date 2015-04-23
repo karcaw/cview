@@ -81,13 +81,17 @@ int main(int argc,char *argv[], char *env[]) {
 	[h contractDataSetWidth: 400 andHeight: 500];
 	[f lockMax: 4];
 	[h lockMax: 4];
-	
+	[[ValueStore valueStore] setKey: @"f" withObject: f];
+	[[ValueStore valueStore] setKey: @"h" withObject: h];
+
 	XYDataSet *f1 = [[XYDataSet alloc] initWithURL: [NSURL fileURLWithPath: testdata] columnName: @"BinaryOpFun"];
 	XYDataSet *h1 = [[XYDataSet alloc] initWithURL: [NSURL fileURLWithPath: testdata] columnNum: 2 columnXNum: 0 columnYNum: 1];
 	[h1 contractDataSetWidth: 400 andHeight: 500];
 	[f1 lockMax: 256];
 	[h1 lockMax: 256];
-	
+	[[ValueStore valueStore] setKey: @"f1" withObject: f1];
+	[[ValueStore valueStore] setKey: @"h1" withObject: h1];
+
 	GLScreen * g = [[GLScreen alloc] initName: @"XYDataSet Test" withWidth: 1000 andHeight: 800];
 
 	Scene * scene1 = [[Scene alloc] init];
@@ -107,7 +111,7 @@ int main(int argc,char *argv[], char *env[]) {
 	o=[[[[GLGrid alloc] initWithDataSet: h1] setXTicks: 50] setYTicks: 50];
 	[scene2 addObject: o atX: 1300 Y: 0 Z: 0];
 	
-	[[[g addWorld: @"Botom" row: 1 col: 0 rowPercent: 50 colPercent:50] 
+	[[[g addWorld: @"Bottom" row: 1 col: 0 rowPercent: 50 colPercent:50] 
 		setScene: scene2] 
 		setEye: [[[Eye alloc] init] setX: 1050.0 Y: 2700.0 Z: 2700.0 Hangle:-4.72 Vangle: -2.45]
 	];
