@@ -71,7 +71,7 @@ The class can display 4 types of Grid: Lines, Surfaces, Ribbons and Points.
 #import "GimpGradient.h"
 
 
-@interface GLMathGL: DrawableObject {
+@interface GLMathGL: GLImage {
 	NSMutableArray *dataSets;
 	ColorMap *colorMap;
 	int ticks;
@@ -83,12 +83,7 @@ The class can display 4 types of Grid: Lines, Surfaces, Ribbons and Points.
 	int chartWidth,chartHeight;
 	unsigned long currentMax;
 	NSMutableData *dataRow;
-	NSMutableData *colorRow;
-	GLText *descText;
-	float fontScale;
-	float fontColorR;
-	float fontColorG;
-	float fontColorB;
+
 	/**a gradient for the color map, a nil value means use the default map.*/
 	GimpGradient *ggr;
 	ChartTypesEnum chartType;
@@ -96,19 +91,13 @@ The class can display 4 types of Grid: Lines, Surfaces, Ribbons and Points.
 	NSRecursiveLock *dataSetsLock;
 	float xbufpercent,ybufpercent;
 }
--init;
 /** Create GLGrid with a dataset retrieved from the ValueStore */
 -initWidth: (int)width andHeight: (int)height;
 
 /** change the dataSet displayed */
 -addDataSetKey: (NSString *)key;
 -(void)receiveResizeNotification: (NSNotification *)notification;
--(void)resetDrawingArrays;
+-(void)resetImage;
 /** get the current dataset keys */
 -(NSArray *)getDataSetKeys;
--setWidth: (int) width;
--setHeight: (int) height;
--(int)width;
--(int)height;
--glDraw;
 @end

@@ -24,8 +24,10 @@ ENDIF()
 
 ADD_PROG(cview cview.m CViewScreenDelegate.m CViewScreenDelegate.m CViewScreenDelegate.m LoadClasses.m ObjectTracker.m ${CVIEW_EXTRA_SRC})
 ADD_PROG(cviewall cviewall.m CViewScreenDelegate.m LoadClasses.m CViewAllScreenDelegate.m) 
-IF(OSMESA_FOUND)
+
+IF(OSMESA_LIBRARY)
 	ADD_PROG(oscview oscview.m glutstub.c)
-	TARGET_LINK_LIBRARIES(oscview ${OSMESA_LIBRARIES})
-ENDIF(OSMESA_FOUND)
+	#LINK_DIRECTORIES(${OSMESA_LIBDIR})
+	TARGET_LINK_LIBRARIES(oscview ${OSMESA_LIBRARY})
+ENDIF(OSMESA_LIBRARY)
 

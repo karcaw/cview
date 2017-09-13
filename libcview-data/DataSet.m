@@ -125,6 +125,7 @@ All rights reserved.
 		dtmp=md;
 	}
 	[self setNewData: dtmp];
+  zeroNegatives=YES;
 	return self;
 }
 
@@ -192,8 +193,26 @@ All rights reserved.
 	return coltotals;
 }
 
+- (float)getColumnMax {
+	float max,*d;
+	int i;
+	d=(float *)[coltotals bytes];
+	for (i=0;i<width;i++)
+		max = MAX(max,d[i]);
+	return max;
+}
+
 - (NSData *)rowTotals {
 	return rowtotals;
+}
+
+- (float)getRowMax {
+	float max,*d;
+	int i;
+	d=(float *)[rowtotals bytes];
+	for (i=0;i<height;i++)
+		max = MAX(max,d[i]);
+	return max;
 }
 
 - shiftData: (int)num {
@@ -384,11 +403,22 @@ All rights reserved.
 
 
 - setWidth: (int)newWidth {
-	L();
+  float *d;
+  int r;
+  L();
 	[dataLock lock];
-	width=newWidth;
-	[data setLength: width*height*sizeof(float)];
-	[coltotals autorelease];
+	if (newWidth != width) {
+
+    [data setLength: newWidth*height*sizeof(float)];
+    d = (float *)[data bytes];
+    for (r=height-1;r>0;r--) {
+      				memcpy(d+r*newWidth,d+r*width,sizeof(float)*(width));
+      				memset(d+r*width,0,sizeof(float)*(newWidth-width));
+    }
+    width=newWidth;
+  }
+  
+  [coltotals autorelease];
 	coltotals = [[NSMutableData alloc] initWithLength: width*sizeof(float)];
 	
 	U();

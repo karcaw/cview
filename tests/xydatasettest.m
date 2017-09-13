@@ -76,7 +76,7 @@ int main(int argc,char *argv[], char *env[]) {
 	}
 		
 
-	XYDataSet *f = [[XYDataSet alloc] initWithURL: [NSURL fileURLWithPath: testdata] columnName: @"Mandelbrot" columnXName: @"X" columnYName: @"Y"];
+	XYDataSet *f = [[XYDataSet alloc] initWithURL: [NSURL fileURLWithPath: testdata] columnName: @"SombreroFunction" columnXName: @"X" columnYName: @"Y"];
 	XYDataSet *h = [[XYDataSet alloc] initWithURL: [NSURL fileURLWithPath: testdata] columnNum: 4];
 	[h contractDataSetWidth: 400 andHeight: 500];
 	[f lockMax: 4];

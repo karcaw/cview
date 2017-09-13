@@ -83,7 +83,7 @@ Data layout for reference:
 */
 
 
-@implementation  GLMathGL
+@implementation GLMathGL
 
 
 -init {
@@ -99,6 +99,8 @@ Data layout for reference:
 	[self init];
 	[self setHeight: height];
 	[self setWidth: width];
+	tw=width;
+	th=height;
 	return self;
 }
 
@@ -110,77 +112,80 @@ Data layout for reference:
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receiveResizeNotification:) name:@"DataSetResize" object:ds];
 	[dataSetsLock unlock];
 	if ([ds dataValid])
-		[self resetDrawingArrays];
+		[self resetImage];
 	
 	return self;
 
 }
 -(void)receiveResizeNotification: (NSNotification *)notification {
 	NSLog(@"GLChartResize notification: %@",notification);
-	[self resetDrawingArrays];
+	[self resetImage];
 }
 
--(void)resetDrawingArrays {
+
+-(void)resetImage {
 	float *d;
-	int i,len;
+	int i,len,hmax;
 	NSEnumerator *list;
   	DataSet *ds;
+	HMGL gr;
+	float max=0.0;
+	hmax=1;
 
 	[dataSetsLock lock];
 
 	len=0;
   	list = [dataSets objectEnumerator];
   	ds = [list nextObject];
-  
-  	if (IS_ROW(chartType))
-  		currentLen = [ds height];
-  	else if (IS_COL(chartType)) 
-  		currentLen = [ds width];
 
-    while ((ds = [list nextObject])) {
-  		//verify width is same
-  		if (IS_ROW(chartType))
-  			len = [ds height];
-  		else if (IS_COL(chartType)) 
-  			len = [ds width];
-  		if (len != currentLen)
-  			NSLog(@"Length is different in the datasets: %d != %d",len,currentLen);
-  	}
-	NSLog(@"Length of data is: %d ",currentLen);
-
-	[colorRow autorelease];
-	dataRow = [[NSMutableData alloc] initWithLength: 2*currentLen*sizeof(float)];
-	NSLog(@"dataRow: %lu",2*currentLen*sizeof(float));
-	colorRow = [[NSMutableData alloc] initWithLength: 4*currentLen*sizeof(float)];
-	d = (float *)[dataRow mutableBytes];
-	// setup drawable array... (xnum,unknown)
-	for (i=0;i<currentLen;i++)
-		d[i*2]=i;
+	HMDT dsm = mgl_create_data();
+	HMDT dsm2 = mgl_create_data();
+	mgl_data_set_float(dsm,(float *)[[ds rowTotals] bytes],[ds height],1,1);
+	max = MAX(max,[ds getRowMax]);
+	hmax = MAX(hmax,[ds height]);
+	ds = [list nextObject];
+	mgl_data_set_float(dsm2,(float *)[[ds rowTotals] bytes],[ds height],1,1);
+	max = MAX(max,[ds getRowMax]);
+	hmax = MAX(hmax,[ds height]);
+	//mglGraph gr(chartWidth,chartHeight);
+	gr = mgl_create_graph(w,h);
+  	//gr.FPlot("sin(pi*x)");
+  	mgl_set_font_def(gr,"w:rC");
+  	mgl_clf_str(gr,"x00000000");
+	mgl_box_str(gr,"w",1);
+	mgl_label(gr,'x',"Xaxis",-1,"");
+	mgl_set_ranges(gr,0,hmax,0,max*1.1,0,0);
+	mgl_axis(gr,"x","w","");
+	mgl_axis(gr,"y","w","");
+	mgl_plot(gr,dsm,"w","");
+	mgl_plot(gr,dsm2,"b","");
+	//mgl_fplot(gr,"sin(pi*x)","","");
 
 	[dataSetsLock unlock];
-
+	[image autorelease];
+	image = [NSMutableData dataWithBytes: mgl_get_rgba(gr) length:w*h*4];
+	bound = NO;
 	return;
 }
+
 
 -(NSArray *)getDataSetKeys {
 	return [dataSets arrayObjectsFromPerformedSelector: @selector(valueStoreKey)];
 }
 
 -initWithPList: (id)list {
-	id o;
 	NSLog(@"initWithPList: %@",[self class]);
 	NSArray *keys;
 	[super initWithPList: list];
-	/// @todo error checking or exception handling.
-	chartHeight = [Defaults integerForKey: @"chartHeight" Id: self Override:list];
-	chartWidth = [Defaults integerForKey: @"chartWidth" Id: self Override:list];
 		
 	keys = [list objectForKey: @"valueStoreDataSetKeys"];
+	NSLog(@"keys: %@",keys);
 	if (keys) {
 		NSString *o;
 		NSEnumerator *list;
 		list = [keys objectEnumerator];
 		while ( (o = [list nextObject]) ) {
+			NSLog(@"key: %@",o);
 			[self addDataSetKey: o];
 		}
 	}
@@ -230,81 +235,4 @@ Data layout for reference:
 }
 
 
--glDraw {
-	NSEnumerator *list;
-  	DataSet *ds;
-  	unsigned long max=1;
-  	GLint raster[4];
-
-	[dataSetsLock lock];
-	[dataSets makeObjectsPerformSelector:@selector(lock)];
-
-  	list = [dataSets objectEnumerator];
-  	ds = [list nextObject];
-  	while ((ds = [list nextObject])) {
-  		max = MAX(currentMax,[ds getMax]);
-  	}
-	
-	if (currentMax != max || currentMax==0) {
-		NSLog(@"New Max: %lu %lu",max,currentMax);
-		currentMax = max;
-	}
-	
-	glScalef(1.0,1.0,1.0);
-
-/*
-	[dataSetsLock lock];
-	if (currentHeight != [dataSet height] || currentWidth != [dataSet width]) {
-		NSLog(@"WARNING: Size mismatch since last time - This should not happen if DataSet Notifications are working on resizes. Attempting to handle cleanly.");
-		[self resetDrawingArrays];
-	}
-*/
-	glGetIntegerv(GL_CURRENT_RASTER_POSITION,raster);
-
-	NSLog(@"Raster: %d %d %d %d",raster[0],raster[1],raster[2],raster[3]);
-	//DRAW HERE!
-	HMGL gr;
-	//mglGraph gr(chartWidth,chartHeight);
-	gr = mgl_create_graph(chartWidth,chartHeight);
-  	//gr.FPlot("sin(pi*x)");
-  	mgl_set_font_def(gr,"w:rC");
-  	mgl_clf_str(gr,"x00000000");
-	mgl_box_str(gr,"w",1);
-	mgl_label(gr,'x',"xaxis",-1,"");
-	mgl_set_ranges(gr,0,7,-1,1,0,0);
-	mgl_axis(gr,"x","w","");
-	mgl_fplot(gr,"sin(pi*x)","","");
-	//glDrawPixels(chartWidth,chartHeight,GL_RGBA,GL_UNSIGNED_BYTE,gr.GetRGBA());
-	glDrawPixels(chartWidth,chartHeight,GL_RGBA,GL_UNSIGNED_BYTE, mgl_get_rgba(gr));
-
-	[dataSetsLock unlock];
-	[dataSets makeObjectsPerformSelector: @selector(unlock)];
-	return self;
-}
-
--description {
-	return [[self class] description];
-}
-
--(NSString*)getName {
-	NSString *retval = [super getName];
-	//if(!name)
-	//	retval = [dataSet description];
-	return retval;
-}
-
--setWidth: (int) width {
-	chartWidth=width;
-	return self;
-}
--setHeight: (int) height {
-	chartHeight=height;
-	return self;
-}
--(int)width {
-	return chartWidth;
-}
--(int)height {
-	return chartHeight;
-}
 @end

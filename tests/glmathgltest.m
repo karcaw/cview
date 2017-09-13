@@ -66,24 +66,30 @@ int main(int argc,char *argv[], char *env[]) {
 	[NSProcessInfo initializeWithArguments: argv count: argc environment: env ];
 #endif
 	GimpGradient *ggr;
-    NSString *testdata = find_resource_path(@"gimpgradient.ggr");
-    if (testdata == nil) {
+    NSString *ggrdata = find_resource_path(@"gimpgradient.ggr");
+    if (ggrdata == nil) {
         NSLog(@"Error Loading Test Gradient");
         exit(1);
     }
-    
-    ggr = [[GimpGradient alloc] initWithFile: testdata];
-	SinDataSet *ds = [[SinDataSet alloc] initWithName: @"Sin()" Width: 1000 Height: 128 interval: 1.0];
+    NSString *testdata = find_resource_path(@"testdata.xy");
+	if (testdata == nil) {
+		NSLog(@"Error Loading Test Data");
+		exit(1);
+	}
+    ggr = [[GimpGradient alloc] initWithFile: ggrdata];
+	XYDataSet *ds = [[XYDataSet alloc] initWithURL: [NSURL fileURLWithPath: testdata] 
+						columnName: @"SombreroFunction" columnXName: @"X" columnYName: @"Y"];
 	SinDataSet *ds2 = [[SinDataSet alloc] initWithName: @"Sin()" Width: 500 Height: 128 interval: 1.0];
+	//[ds lockMax: 4];
 
 	[[ValueStore valueStore] setKey: @"ds" withObject: ds];
 	[[ValueStore valueStore] setKey: @"ds2" withObject: ds2];
   
-	GLScreen * g = [[GLScreen alloc] initName: @"GLChart Test"];
+	GLScreen * g = [[GLScreen alloc] initName: @"GLMathGL Test"];
 	GLMathGL *mgl = [[GLMathGL alloc] initWidth: 500 andHeight: 300];
 	[mgl addDataSetKey: @"ds"];
 	[mgl addDataSetKey: @"ds2"];
-	Scene *scene = [[Scene alloc] init];
+	Scene *scene = [[Scene alloc] initWithObject: [[GLGrid alloc] initWithDataSet: ds] atX: 0 Y: 0 Z:0];
 
 	Scene *overlay = [[Scene alloc] initWithObject: mgl
  		alignHoriz: 0 Vert: 0];

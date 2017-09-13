@@ -110,7 +110,9 @@ This class provides a basic data store, with associated information.  It is orga
 /** get the entire dataset as a float array */
 - (float *)data;
 - (NSData *)columnTotals;
+- (float)getColumnMax;
 - (NSData *)rowTotals;
+- (float)getRowMax;
 - (NSData *)dataObject;
 /** move the data up in the data space, throwing away the extra, and zeroing the new space*/
 - shiftData: (int)num;

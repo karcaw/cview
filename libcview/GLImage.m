@@ -119,7 +119,8 @@ All rights reserved.
 -initWithPList: (id)list {
 	NSLog(@"initWithPList: %@",[self class]);
 	[super initWithPList: list];
-	[self initWithFilename: [list objectForKey: @"filename" missing: @"thefileisnotehere"]];
+	if ([self class] == [GLImage class])
+		[self initWithFilename: [list objectForKey: @"filename" missing: @"thefileisnothere"]];
 	w = [Defaults integerForKey:@"w" Id:self Override:list];
 	h = [Defaults integerForKey:@"h" Id:self Override:list];
 	vflip = [Defaults integerForKey:@"vflip" Id:self Override:list];
@@ -130,7 +131,8 @@ All rights reserved.
 -getPList {
 	NSLog(@"getPList: %@",self);
 	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary: [super getPList]];
-	[dict setObject: filename forKey: @"filename"];
+	if ([self class] == [GLImage class])
+		[dict setObject: filename forKey: @"filename"];
 	PLIST_SET_IF_NOT_DEFAULT_INT(dict, w);
 	PLIST_SET_IF_NOT_DEFAULT_INT(dict, h);
 	PLIST_SET_IF_NOT_DEFAULT_INT(dict, vflip);

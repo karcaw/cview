@@ -1,4 +1,4 @@
-
+SET(CMAKE_MACOSX_RPATH 1)
 SET(CVIEW_DATA_CLASSES
 	CalculatedDataSet
 	DataSet
