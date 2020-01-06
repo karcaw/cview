@@ -133,7 +133,6 @@ static float blankdata[] = {
 	Xticks = [[NSMutableData dataWithLength: 32*TICK_LEN] retain];
 	Yticks = [[NSMutableData dataWithLength: 32*TICK_LEN] retain];
 	allowRescale = YES;
-	rateSuffix = DS_DEFAULT_RATE_SUFFIX;
 	[data setData: [NSData dataWithBytes: blankdata length: sizeof(blankdata)]];
 	currentMax = 255.0;
 
@@ -248,7 +247,7 @@ static float blankdata[] = {
 			break;
 
 		case RATE:
-			LOGSTAGE(@"RATE finish");
+			LOGSTAGE(@"RATE finish: %@",rateSuffix);
 			[incomingData increaseLengthBy:1];
             if ([[self getRate] compare: DS_DEFAULT_RATE_SUFFIX] == NSOrderedSame )
                 [self setRate: [NSString stringWithUTF8String: [incomingData bytes]]];
