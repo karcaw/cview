@@ -152,7 +152,7 @@ int main(int argc,char *argv[], char *env[]) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();	
 	
-	gluPerspective(20.0,ratio,0.1,20000);
+	gluPerspective(20.0,ratio,0.1,25000);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	//Gl init stuffage
