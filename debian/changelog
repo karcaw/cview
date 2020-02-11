@@ -1,3 +1,10 @@
+cview (0.5.0) bionic; urgency=medium
+
+  * Add CropDataSet
+  * Add GraphiteDataSet 
+
+ -- Evan Felix <e@pnnl.gov>  Tue, 11 Feb 2020 10:32:11 -0800
+
 cview (0.3.6) bionic; urgency=medium
 
   * update for bionic 
