@@ -1,5 +1,9 @@
 {
     "global.rasterFontSize" = 12;
+	"CropDataSet.left" = 0;
+	"CropDataSet.right" = 0;
+	"CropDataSet.top" = 0;
+	"CropDataSet.bottom" = 0;
 	"Eye.strafe_speed" = 10;
 	"Eye.rotate_speed" = 0.025;
 	"Eye.move_speed" = 10;

@@ -198,7 +198,7 @@ static const char *gridTypeSelectors[] =	{
 
 	if (gridType == G_SURFACE) {
 		numSurfaceVertices = ((w - 1) * 2) * h;
-
+		[surfaceIndices autorelease];
 		surfaceIndices = [[NSMutableData alloc] initWithLength: numSurfaceVertices*sizeof(GLuint)];
 		indices = (GLuint *)[surfaceIndices mutableBytes];
 		for(i=0;i<w-1;i++)
@@ -233,7 +233,7 @@ static const char *gridTypeSelectors[] =	{
 	yscale = [Defaults floatForKey: @"yscale" Id: self Override: list];
 	zscale = [Defaults floatForKey: @"zscale" Id: self Override: list];
 	gridType = [Defaults integerForKey: @"gridType" Id: self Override:list];
-		
+
 	o = [list objectForKey: @"gradient" missing: nil];
 	if (o!=nil)
 		ggr = [[GimpGradient alloc] initWithPList: o];
@@ -326,6 +326,7 @@ static const char *gridTypeSelectors[] =	{
 	[dataSet autorelease];
 	[dataSetLock autorelease];
 	[ggr autorelease];
+	[surfaceIndices autorelease];
 	return [super dealloc];
 }
 
@@ -343,17 +344,17 @@ static const char *gridTypeSelectors[] =	{
 -glDraw {
 	[dataSet lock];
 	unsigned long max = round([dataSet getMax]);
-	max = max<5?5:max;	
+	max = max<5?5:max;
 
 	if (currentMax != max || currentMax==0) {
 		NSLog(@"New Max: %lu %lu",max,currentMax);
 		currentMax = max;
 		numTicks = niceticks(0,currentMax,currentTicks,axisTicks);
 		tickMax = round(currentTicks[numTicks-1]);
-		
+
 		[self resetColorMap];
 	}
-	
+
 	glScalef(1.0,1.0,1.0);
 
 	[dataSetLock lock];
@@ -417,7 +418,7 @@ static const char *gridTypeSelectors[] =	{
 	glEnd();
 
 	glColor3f(fontColorR,fontColorG,fontColorB);
-	for (i=0;i<numTicks;i++) 
+	for (i=0;i<numTicks;i++)
 		drawString3D(x+4.0/xscale,currentTicks[i],y,GLUT_BITMAP_HELVETICA_12,[dataSet getLabel: currentTicks[i]],0.0);
 
 	glPopMatrix();
@@ -510,11 +511,12 @@ static const char *gridTypeSelectors[] =	{
 }
 
 
--(void)setGridType:(GridTypesEnum)code {
+-setGridType:(GridTypesEnum)code {
 	if (code < G_COUNT)
 		gridType = code;
 	/**@todo actualy switch drawing*/
 	[self resetDrawingArrays];
+	return self;
 }
 
 -(GridTypesEnum)getGridType {
@@ -567,7 +569,7 @@ static const char *gridTypeSelectors[] =	{
 		verts[0] = (float)i;
 		countPoints = 1;
 		prevPoint=0;
-		for (j=1;j<h;j++) { 
+		for (j=1;j<h;j++) {
 			if(prevValue != dl[j]) {
 				if(j-1 != prevPoint) {
 					verts[countPoints*3+2] = (float)j-1;
@@ -576,7 +578,7 @@ static const char *gridTypeSelectors[] =	{
 					countPoints++;
 				}
 				verts[countPoints*3+2] = (float)j;
-				verts[countPoints*3+1] = MAX(0,dl[j]);
+				verts[countPoints*3+1] = MIN(MAX(0,dl[j]),101);
 				verts[countPoints*3+0] = (float)i;
 				countPoints++;
 				prevValue = dl[j];
@@ -585,11 +587,11 @@ static const char *gridTypeSelectors[] =	{
 		}
 		if(j-1 != prevPoint) {
 			verts[countPoints*3+2] = (float)j-1;
-			verts[countPoints*3+1] = MAX(0,dl[j-1]);
+			verts[countPoints*3+1] = MIN(MAX(0,dl[j-1]),101);
 			verts[countPoints*3+0] = (float)i;
 			countPoints++;
 		}
-		
+
 		[colorMap doMapWithPoints: verts thatHasLength: countPoints toColors: [colorRow mutableBytes]];
 
 		glDrawArrays(GL_LINE_STRIP,0,countPoints);

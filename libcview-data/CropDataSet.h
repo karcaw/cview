@@ -2,7 +2,7 @@
 
 This file is part of the CVIEW graphics system, which is goverened by the following License
 
-Copyright © 2008,2009, Battelle Memorial Institute
+Copyright © 2020, Battelle Memorial Institute
 All rights reserved.
 
 1.	Battelle Memorial Institute (hereinafter Battelle) hereby grants permission
@@ -56,98 +56,29 @@ All rights reserved.
 	not infringe privately owned rights.
 
 */
-/**
-This class implements the gl drawing code to show a graph of lines above a lower base plane, with X and Y labels, with a z-axix tower showing the height of the data.  The data is provided by a DataSet class.  The coloring of the lines is provided by a self-created ColorMap class.
-
-The class can display 4 types of Grid: Lines, Surfaces, Ribbons and Points.
-@author Evan Felix <evan.felix@pnl.gov>, (C) 2008
-@ingroup cview3d
-*/
-#import <Foundation/Foundation.h>
+#import <Foundation/NSObject.h>
+#import <Foundation/NSData.h>
 #import "DataSet.h"
-#import "ColorMap.h"
-#import "DrawableObject.h"
-#import "GLText.h"
-#import "GimpGradient.h"
-#define MAX_TICKS 10
+#import "UpdateRunLoop.h"
 
-typedef enum { G_LINES=0,G_RIBBON,G_SURFACE,G_POINTS,G_COUNT } GridTypesEnum;
-#define G_LINES_STRING @"0"
+/**
+	Cropping Data set to slice off portions of another dataset.
+	Cropping is only allowed down to a 2x2 dataset, changes smaller than that will be ignored.
 
-@interface GLGrid: DrawableObject {
+	@author Evan Felix
+	@ingroup cviewdata
+*/
+@interface CropDataSet: DataSet <PList> {
+	int left,right,top,bottom;
 	DataSet *dataSet;
-	ColorMap *colorMap;
-	int xTicks,yTicks;
-	float xTickDistance,yTickDistance;
-	int axisTicks;
-	double currentTicks[MAX_TICKS];
-	int numTicks;
-	unsigned long tickMax;
-	int currentWidth,currentHeight;
-	unsigned long currentMax;
-	NSMutableData *dataRow;
-	NSMutableData *colorRow;
-	GLText *descText;
-	float fontScale;
-	float fontColorR;
-	float fontColorG;
-	float fontColorB;
-	float xscale,yscale,zscale;
-	float dzmult,rmult;
-	/**a gradient for the color map, a nil value means use the default map.*/
-	GimpGradient *ggr;
-	GridTypesEnum gridType;
-	/** protect the dataSet member from being changed while we are reading it */
-	NSRecursiveLock *dataSetLock;
-	//surface specific
-	NSMutableData *surfaceIndices;
 }
--init;
-/** Create GLGrid with a dataset, using the default Line Drawing method*/
--initWithDataSet: (DataSet *)ds;
-/** Create GLGrid with a dataset, using the given Drawing method*/
--initWithDataSet: (DataSet *)ds andType: (GridTypesEnum)type;
-/** Create GLGrid with a dataset retrieved from the ValueStore, and a given drawing method*/
--initWithDataSetKey: (NSString *)key andType: (GridTypesEnum)type;
-/** Create GLGrid with a dataset retrieved from the ValueStore */
--initWithDataSetKey: (NSString *)key;
-
-/** change the dataSet displayed */
--setDataSet: (DataSet *)ds;
--(void)receiveResizeNotification: (NSNotification *)notification;
--(void)resetDrawingArrays;
-/** get the current dataset */
--(DataSet *)getDataSet;
--glDraw;
-/** draw the overall grid description text */
--drawTitles;
-/** draw the z axis tower with appropriate ticks */
--drawAxis;
-/** draw the lower plane, with x and y axis ticks */
--drawPlane;
-/** set the delta between each tick drawing on the X axis*/
--setXTicks: (int) delta;
-/** set the delta between each tick drawing on the Y axis*/
--setYTicks: (int) delta;
--(int)xTicks;
--(int)yTicks;
-/** set the scaling of the descriptive text */
--setFontScale:(float)scale;
--(float)fontScale;
-/**Set the current type of grid to display*/
--setGridType:(GridTypesEnum)code;
-/**Returns the current Type of Grid being Displayed*/
--(GridTypesEnum)getGridType;
-/** draw the data lines*/
--drawLines;
-/** draw the data lines*/
--drawSurface;
-/** draw the data lines*/
--drawPoints;
-/** draw the data lines*/
--drawRibbons;
-/** set the Gradient for color mapping */
--setGradient: (GimpGradient *)gradient;
-/** retrieve the current gradient */
--getGradient;
+- initWithName: (NSString *)n dataSet: (DataSet *)ds;
+- setLeft: (int)l;
+- setRight: (int)r;
+- setTop: (int)t;
+- setBottom: (int)b;
+- (int)left;
+- (int)right;
+- (int)top;
+- (int)bottom;
 @end
