@@ -3,7 +3,7 @@ MAINTAINER karcaw@gmail.com
 
 #you should be able to build and run this docker file to get cview deb files:
 #  docker build -t cbuild
-#  docker run -t -i -v /home/<user>/.gnupg:/root/.gnupg cbuild
+#  docker run -t -i -v /home/<user>/.gnupg:/root/.gnupg -v `pwd`/output:/output   cbuild
 
 #RUN echo "deb http://ppa.launchpad.net/thjc/ppa/ubuntu precise main" > /etc/apt/sources.list.d/custom.list
 RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup

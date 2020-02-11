@@ -1,6 +1,0 @@
-#!/bin/bash -x
-
-
-debuild -S
-
-cp /*cview* /output
