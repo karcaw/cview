@@ -1,3 +1,11 @@
+cview (0.5.1) bionic; urgency=medium
+
+  * Cleanup The CropDataSet code so it works with a lock on the dataSet
+  * Re-write the sort in the ValueStore to put CropDataSets last so they can
+    refer to things.
+
+ -- Evan Felix <e@pnnl.gov>  Wed, 12 Feb 2020 14:43:40 -0800
+
 cview (0.5.0) bionic; urgency=medium
 
   * Add CropDataSet

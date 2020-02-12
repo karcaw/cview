@@ -14,13 +14,13 @@ All rights reserved.
 	others to do so, subject to the following conditions:
 
 	•	Redistributions of source code must retain the above copyright
-		notice, this list of conditions and the following disclaimers. 
+		notice, this list of conditions and the following disclaimers.
 	•	Redistributions in binary form must reproduce the above copyright
 		notice, this list of conditions and the following disclaimer in the
 		documentation and/or other materials provided with the distribution.
 	•	Other than as used herein, neither the name Battelle Memorial
 		Institute or Battelle may be used in any form whatsoever without the
-		express written consent of Battelle.  
+		express written consent of Battelle.
 	•	Redistributions of the software in any form, and publications based
 		on work performed using the software should include the following
 		citation as a reference:
@@ -53,7 +53,7 @@ All rights reserved.
 	makes any warranty, express or implied, or assumes any legal liability or
 	responsibility for the accuracy, completeness or usefulness of any data,
 	apparatus, product or process disclosed, or represents that its use would
-	not infringe privately owned rights.  
+	not infringe privately owned rights.
 
 */
 #import <sys/param.h>  //for max/min
@@ -83,7 +83,7 @@ All rights reserved.
 void TW_CALL floatSetCallback(const void *value, void *clientData) {
 	ATB_Node *atb = (ATB_Node *)clientData;
 
-	[atb->object setValue: [NSNumber numberWithFloat: *(const float *)value] forKeyPath: atb->name];	
+	[atb->object setValue: [NSNumber numberWithFloat: *(const float *)value] forKeyPath: atb->name];
 }
 
 void TW_CALL floatGetCallback(void *value, void *clientData) {
@@ -95,7 +95,7 @@ void TW_CALL floatGetCallback(void *value, void *clientData) {
 
 void TW_CALL intSetCallback(const void *value, void *clientData) {
 	ATB_Node *atb = (ATB_Node *)clientData;
-	
+
 	[atb->object setValue: [NSNumber numberWithInt: *(const int *)value] forKeyPath: atb->name];
 }
 
@@ -108,13 +108,13 @@ void TW_CALL intGetCallback(void *value, void *clientData) {
 
 void TW_CALL boolSetCallback(const void *value, void *clientData) {
 	ATB_Node *atb = (ATB_Node *)clientData;
-	
+
 	[atb->object setValue: [NSNumber numberWithBool: *(const char *)value] forKeyPath: atb->name];
 }
 
 void TW_CALL boolGetCallback(void *value, void *clientData) {
 	ATB_Node *atb = (ATB_Node *)clientData;
-  
+
 	NSNumber *i=[atb->object valueForKeyPath: atb->name];
 	*(char *)value = [i boolValue];
 }
@@ -148,9 +148,9 @@ void TW_CALL stringGetCallback(void *value, void *clientData) {
 static void TW_CALL urlSetCallback(const void *value, void *clientData) {
 	ATB_Node *atb = (ATB_Node *)clientData;
 
-	[atb->object 
-		setValue: 
-			[NSURL URLWithString: 
+	[atb->object
+		setValue:
+			[NSURL URLWithString:
 				[NSString stringWithUTF8String: (const char *)value]]
 		forKeyPath: atb->name
 	];
@@ -168,29 +168,29 @@ static void TW_CALL urlGetCallback(void *value, void *clientData) {
 */
 
 BOOL parseTree(TwBar *bar, NSString *name, NSObject *tree, NSString *grp, NSMutableSet *nodeTracker) {
-	
+
 	//Add all attributes from this tree
 	NSArray *att = [tree attributeKeys];
 	NSString *key;
 	NSEnumerator *list;
 	NSDictionary *settings;
 	NSString *keybase;
-  
-  
-  
+
+
+
 	if (grp)
 		keybase=[NSString stringWithFormat:@"%@.",grp];
     else
       keybase=@"";
-      
+
       //NSLog(@"Node props: %@ keybase: %@",att, keybase);
       if (att) {
-        
+
         if ([tree respondsToSelector: @selector(tweaksettings)])
           settings = [tree valueForKey: @"tweaksettings"];
         else
           settings = [NSDictionary dictionary];
-        
+
         //NSLog(@"settings=%@",settings);
         list = [att objectEnumerator];
         while ((key = [list nextObject])) {
@@ -201,16 +201,16 @@ BOOL parseTree(TwBar *bar, NSString *name, NSObject *tree, NSString *grp, NSMuta
           NSString *keypath = [NSString stringWithFormat:@"%@%@",keybase,key];
           ATB_Node *atb = [[ATB_Node alloc] initWithName: key andObject: tree];
           [nodeTracker addObject:atb];
-          
+
           NSString *setting = [settings objectForKey: key];
-          
+
           const char *data="";
-          
+
           if (setting)
             data=[setting UTF8String];
           data=[[NSString stringWithFormat:@"label='%@' %s",key,data] UTF8String];
           //NSLog(@"name: %@, class: %@ keypath: %@ settings: %s",key,[o class],keypath, data);
-          
+
           if ([o isKindOfClass: [NSNumber class]]) {
             NSNumber *n = (NSNumber *)o;
             //NSLog(@"is number:%c",*[n objCType]);
@@ -219,7 +219,10 @@ BOOL parseTree(TwBar *bar, NSString *name, NSObject *tree, NSString *grp, NSMuta
                 TwAddVarCB(bar, [keypath UTF8String], TW_TYPE_FLOAT, floatSetCallback, floatGetCallback, atb, data);
                 break;
               case 'i':
-                TwAddVarCB(bar, [keypath UTF8String], TW_TYPE_INT32, intSetCallback, intGetCallback, atb, data);
+                if ( [setting containsString:@"true="] ) /* lame way to detect this, but its all i have */
+					TwAddVarCB(bar, [keypath UTF8String], TW_TYPE_BOOL32, intSetCallback, intGetCallback, atb, data);
+				else
+                	TwAddVarCB(bar, [keypath UTF8String], TW_TYPE_INT32, intSetCallback, intGetCallback, atb, data);
                 break;
               case 'c': /* this is probably handled badly, but so far we only have bool values that come back as 'c' type */
                 TwAddVarCB(bar, [keypath UTF8String], TW_TYPE_BOOL8, boolSetCallback , boolGetCallback, atb, data);
@@ -231,26 +234,26 @@ BOOL parseTree(TwBar *bar, NSString *name, NSObject *tree, NSString *grp, NSMuta
             if (grp)
               TwDefine([[NSString stringWithFormat:@"%@/%@ group=%@",name,keypath,grp] UTF8String]);
           }
-          
+
           else if ([o isMemberOfClass: [NSMutableString class]]) {
             TwAddVarCB(bar, [keypath UTF8String], TW_TYPE_CSSTRING(MAX_STRING), mutableStringSetCallback, stringGetCallback, atb, data);
-            
+
             if (grp)
               TwDefine([[NSString stringWithFormat:@"%@/%@ group=%@",name,keypath,grp] UTF8String]);
           }
-          
+
           else if ([o isKindOfClass: [NSString class]]) {
             TwAddVarCB(bar, [keypath UTF8String], TW_TYPE_CSSTRING(MAX_STRING), stringSetCallback, stringGetCallback, atb, data);
-            
+
             if (grp)
               TwDefine([[NSString stringWithFormat:@"%@/%@ group=%@",name,keypath,grp] UTF8String]);
           }
           /*
            else if ([o isKindOfClass: [NSURL class]]) {
            NSURL *u=(NSURL *)o;
-           
+
            TwAddVarCB(myBar, [keypath UTF8String], TW_TYPE_CSSTRING(MAX_STRING), urlSetCallback, urlGetCallback, atb, data);
-           
+
            if (grp)
            TwDefine([[NSString stringWithFormat:@"%@/%@ group=%@",name,keypath,grp] UTF8String]);
            }
@@ -258,7 +261,7 @@ BOOL parseTree(TwBar *bar, NSString *name, NSObject *tree, NSString *grp, NSMuta
           else if ([o isKindOfClass: [NSArray class]]) {
             NSArray *a = (NSArray *)o;
             int i;
-            
+
             for (i=0;i<[a count];i++) {
               NSString *newpath=[NSString stringWithFormat:@"%@.%d",keypath,i];
               NSString *newkey=[NSString stringWithFormat:@"%@[%d]",key,i];
@@ -359,7 +362,7 @@ BOOL parseTree(TwBar *bar, NSString *name, NSObject *tree, NSString *grp, NSMuta
 -(BOOL)setTree: (NSObject *)tree {
 	TwRemoveAllVars(myBar);
 	[myNodes removeAllObjects];
-	
+
 	[tree retain];
 	[[NSNotificationCenter defaultCenter] removeObserver: self name: @"DataModelModified" object: myTree];
 	[myTree autorelease];

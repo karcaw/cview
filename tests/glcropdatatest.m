@@ -99,6 +99,7 @@ int main(int argc,char *argv[], char *env[]) {
 		setEye: [[[Eye alloc] init] setX: 591 Y: 1437.0 Z: 1291.0 Hangle:-4.8 Vangle: -2.47]
 	];
 	[g dumpScreens];
+    NSLog(@"PList: %@",[g getPList]);
 	[g run];
     // might want to autorelease these above when they are allocated.
     [g autorelease];

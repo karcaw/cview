@@ -61,9 +61,22 @@ All rights reserved.
 #import "ValueStore.h"
 #import "ListComp.h"
 
+/* sort order, mostly we want crop as the highest, and then Calculated, the others orders should not matter much and so will return NSNotFound, which is very high */
+static NSArray *dataSetSortOrder;
+
 NSComparisonResult arrayObjectReverseAlpha(id one,id two,void *indexp) {
 	int index = *(int *)indexp;
-	return [[(NSArray *)two objectAtIndex: index] compare: [(NSArray *)one objectAtIndex: index]];
+	int onei = [dataSetSortOrder indexOfObject: [one objectAtIndex: index]];
+	int twoi = [dataSetSortOrder indexOfObject: [two objectAtIndex: index]];
+	int ret;
+	if (onei < twoi)
+		ret = NSOrderedAscending;
+	else if (onei > twoi)
+		ret = NSOrderedDescending;
+	else
+		ret = NSOrderedSame;
+	NSLog(@"compare: %@ %@ %d %d -> %d",[one objectAtIndex: index],[two objectAtIndex: index],onei,twoi,ret);
+	return ret;
 }
 
 @implementation ValueStore 
@@ -72,6 +85,7 @@ static ValueStore *singletonValueStore;
 	if ([ValueStore class] == self) {
 		singletonValueStore = [[self alloc] init];
 	}
+	dataSetSortOrder = [NSArray arrayWithObjects: @"CalculatedDataSet", @"CropDataSet", nil];
 }
 +valueStore {
 	return singletonValueStore;
@@ -114,9 +128,7 @@ static ValueStore *singletonValueStore;
 	NSEnumerator *e;
 	NSArray *a;
 	int index=1;
-	/** @todo Crazy hack to deal with CalulatedDataSets needing sub datasets.
-		It so happens that if we sort the array re-verse alphabetically by Class name, We should add all the datasets before calculated needs them.  This is a more general issue that classes using this should dealwith by delaying grabbing objects at initialization time.
-	*/
+
 	array = [array sortedArrayUsingFunction: arrayObjectReverseAlpha context: &index];
 	NSLog(@"loadValueArray %@",array);
 	e = [array objectEnumerator];

@@ -68,12 +68,14 @@ All rights reserved.
 @implementation CropDataSet
 - initWithName: (NSString *)n dataSet: (DataSet *)ds {
 	[super initWithName: n Width: [ds width] Height: [ds height]];
+	dataSetLock = [[NSRecursiveLock alloc] init];
 
-	dataSet = [ds retain];
+	[self setDataSet: ds];
 	left=0;
 	right=0;
 	bottom=0;
 	top=0;
+	currentLimit=DS_DEFAULT_LIMIT;
 
 	return self;
 }
@@ -82,12 +84,11 @@ All rights reserved.
 -initWithPList: (id)list {
 	DataSet *ds;
 	NSLog(@"initWithPList: %@",[self class]);
-
 	[super initWithPList: list];
 
 	ds = [[ValueStore valueStore] getObject: [list objectForKey: @"valueStoreDataSetKey"]];
 	NSLog(@"DataSet from ValueStore: %@",ds);
-	dataSet = [ds retain];
+	[self initWithName: name dataSet: ds];
 
 	left = [Defaults integerForKey: @"left" Id: self Override: list];
 	right = [Defaults integerForKey: @"right" Id: self Override: list];
@@ -95,6 +96,30 @@ All rights reserved.
 	bottom = [Defaults integerForKey: @"bottom" Id: self Override: list];
 
 	return self;
+}
+
+-setDataSet: (DataSet *)ds {
+	[dataSetLock lock];
+	[ds retain];
+	[[NSNotificationCenter defaultCenter] removeObserver:self name:@"DataSetResize" object: nil];
+	[dataSet autorelease];
+	dataSet = ds;
+	NSLog(@"register notify for: %@ %@",self,dataSet);
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receiveResizeNotification:) name:@"DataSetResize" object:dataSet];
+	[self resetSizes];
+	[dataSetLock unlock];
+
+	return self;
+}
+
+-(void)receiveResizeNotification: (NSNotification *)notification {
+	NSLog(@"%@ notification: %@",self,notification);
+	[self resetSizes];
+}
+
+-(void)resetSizes {
+	width = [dataSet width]-left-right;
+	height = [dataSet height]-top-bottom;
 }
 
 -getPList {
@@ -110,7 +135,7 @@ All rights reserved.
 
 -(NSArray *)attributeKeys {
 	NSArray *new = [NSArray arrayWithObjects: @"left", @"right", @"top", @"bottom",nil];
-	return [new arrayByAddingObjectsFromArray: [super attributeKeys]];
+	return new;
 }
 
 -(NSDictionary *)tweaksettings {
@@ -121,6 +146,7 @@ All rights reserved.
          @"help='Bottom side crop' label='Bottom' min=0 step=1",@"bottom",
           nil];
 }
+
 - setLeft: (int)l {
 	if ( l >= 0 && [dataSet width]-right-l > 1)
 		left = l;
@@ -163,31 +189,46 @@ All rights reserved.
 	return bottom;
 };
 - (NSString *)rowTick: (int)row {
+	NSString *tick;
+	if ([dataSet dataValid])
+		tick =[dataSet rowTick:row+bottom];
+	else
+		tick = @"DataSet Not Valid";
 	return [dataSet rowTick:row+bottom];
 }
 - (NSString *)columnTick: (int)col {
-	return [dataSet columnTick:col+left];
+	NSString *tick;
+	if ([dataSet dataValid])
+		tick = [dataSet columnTick:col+left];
+	else
+		tick = @"DataSet Not Valid";
+	return tick;
 }
 - (NSDictionary *)columnMeta: (int)col {
 	return [dataSet columnMeta:col+left];
 }
 
 - (float *)dataRow: (int)row {
+	float *ret;
+	[dataSetLock lock];
 	float *d = (float *)[dataSet data];
-	return d+(row+left)*[dataSet height]+bottom;
+	ret = d+(row+left)*[dataSet height]+bottom;
+	[dataSetLock unlock];
+	return ret;
 }
 
 /* call in this section are from dataset, we either
    ignore things, or pass them to the dataset function */
 - (float *)data {
 	int row;
+	[dataSetLock lock];
 	[data autorelease];
 	data = [[NSMutableData alloc] initWithLength: width*height*sizeof(float)];
 	float *src = (float *)[dataSet data]; // source array
 	float *dest = (float *)[data mutableBytes];
 	for (row = 0; row < width; row++)
 		memcpy(dest+row*height,src+(row+left)*[dataSet height]+bottom,height*sizeof(float));
-	//FIXME: this should probably be defined
+	[dataSetLock unlock];
 	return dest;
 }
 
@@ -235,7 +276,9 @@ All rights reserved.
 //- (NSString *)getDescription;
 //- setRate:(NSString *)r;
 //- (NSString *)getRate;
-//- description;
+- (NSString *)description {
+	return [NSString stringWithFormat:@"%@(%@)",[self class],[dataSet name]];
+}
 - (BOOL)dataValid {
 	return [dataSet dataValid];
 }

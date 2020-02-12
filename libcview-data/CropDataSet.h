@@ -71,8 +71,13 @@ All rights reserved.
 @interface CropDataSet: DataSet <PList> {
 	int left,right,top,bottom;
 	DataSet *dataSet;
+	NSRecursiveLock *dataSetLock;
 }
 - initWithName: (NSString *)n dataSet: (DataSet *)ds;
+-setDataSet: (DataSet *)ds;
+-(void)receiveResizeNotification: (NSNotification *)notification;
+-(void)resetSizes;
+
 - setLeft: (int)l;
 - setRight: (int)r;
 - setTop: (int)t;

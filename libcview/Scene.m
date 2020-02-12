@@ -125,7 +125,7 @@ All rights reserved.
 	return [NSDictionary dictionaryWithObjectsAndKeys:
 		@"help='Horizontal Alignment' min=-1 max=1 step=1",@"halign",
 		@"help='Vertical Alignment' min=-1 max=1 step=1",@"valign",
-		@"help='Use alignment Values' min=0 max=1 step=1",@"align",
+		@"help='Use alignment Values' true=Enabled false=Disabled ",@"align",
 		@"min=-180 max=180 step=2 precision=0",@"rotx",
 		@"min=-180 max=180 step=2 precision=0",@"roty",
 		@"min=-180 max=180 step=2 precision=0",@"rotz",
