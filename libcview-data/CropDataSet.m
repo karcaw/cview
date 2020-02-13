@@ -273,7 +273,9 @@ All rights reserved.
 	return self;
 }
 //- setDescription: (NSString *)description;
-//- (NSString *)getDescription;
+- (NSString *)getDescription {
+    return [dataSet getDescription];
+};
 //- setRate:(NSString *)r;
 //- (NSString *)getRate;
 - (NSString *)description {

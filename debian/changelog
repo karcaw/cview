@@ -1,3 +1,10 @@
+cview (0.5.2) bionic; urgency=medium
+
+  * Fix CropDataSet Descriptions
+  * Fix bad min handling in GLGrid 
+
+ -- Evan Felix <e@pnnl.gov>  Thu, 13 Feb 2020 15:17:01 -0800
+
 cview (0.5.1) bionic; urgency=medium
 
   * Cleanup The CropDataSet code so it works with a lock on the dataSet

@@ -542,6 +542,7 @@ static const char *gridTypeSelectors[] =	{
 -drawLines {
 	int i,j;
 	int w,h;
+    float m;
 	float *dl;
 	float *verts;
 	int prevPoint=0;
@@ -559,13 +560,14 @@ static const char *gridTypeSelectors[] =	{
 
 	w=[dataSet width];
 	h=[dataSet height];
+    m=[dataSet getMax];
 
 	for (i=0;i<w;i++) {
 		dl=[dataSet dataRow: i];
 
 		/// @todo is there a gooder way to draw all the lines?
 		verts[2] = 0;
-		verts[1] = prevValue = MAX(0,dl[0]);
+		verts[1] = prevValue = MIN(MAX(0,dl[0]),m);
 		verts[0] = (float)i;
 		countPoints = 1;
 		prevPoint=0;
@@ -578,7 +580,7 @@ static const char *gridTypeSelectors[] =	{
 					countPoints++;
 				}
 				verts[countPoints*3+2] = (float)j;
-				verts[countPoints*3+1] = MIN(MAX(0,dl[j]),101);
+				verts[countPoints*3+1] = MIN(MAX(0,dl[j]),m);
 				verts[countPoints*3+0] = (float)i;
 				countPoints++;
 				prevValue = dl[j];
@@ -587,7 +589,7 @@ static const char *gridTypeSelectors[] =	{
 		}
 		if(j-1 != prevPoint) {
 			verts[countPoints*3+2] = (float)j-1;
-			verts[countPoints*3+1] = MIN(MAX(0,dl[j-1]),101);
+			verts[countPoints*3+1] = MIN(MAX(0,dl[j-1]),m);
 			verts[countPoints*3+0] = (float)i;
 			countPoints++;
 		}
