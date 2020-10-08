@@ -1,3 +1,9 @@
+cview (0.5.3) bionic; urgency=medium
+
+  * Add URL encoding of the dataset key in WebDataSet
+
+ -- Evan Felix <e@pnnl.gov>  Thu, 08 Oct 2020 16:00:01 -0800
+
 cview (0.5.2) bionic; urgency=medium
 
   * Fix CropDataSet Descriptions
