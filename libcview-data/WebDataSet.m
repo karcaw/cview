@@ -112,12 +112,12 @@ static float blankdata[] = {
 	float interval = [[NSUserDefaults standardUserDefaults] floatForKey: @"dataUpdateInterval"];
 	indexByString = nil;
 	baseURL = [base retain];
-	dataKey = key;
-	dataURL = [[NSURL URLWithString: [NSString stringWithFormat: @"%@.data",key] relativeToURL: base] retain];
+	dataKey = [key stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+	dataURL = [[NSURL URLWithString: [NSString stringWithFormat: @"%@.data",dataKey] relativeToURL: base] retain];
 	XticksURL = [[NSURL URLWithString: @"xtick" relativeToURL: base] retain];
-	YticksURL =  [[NSURL URLWithString: [NSString stringWithFormat: @"%@.ytick",key] relativeToURL: base] retain];
-	rateURL = [[NSURL URLWithString: [NSString stringWithFormat: @"%@.rate",key] relativeToURL: base] retain];
-	descURL = [[NSURL URLWithString: [NSString stringWithFormat: @"%@.desc",key] relativeToURL: base] retain];
+	YticksURL =  [[NSURL URLWithString: [NSString stringWithFormat: @"%@.ytick",dataKey] relativeToURL: base] retain];
+	rateURL = [[NSURL URLWithString: [NSString stringWithFormat: @"%@.rate",dataKey] relativeToURL: base] retain];
+	descURL = [[NSURL URLWithString: [NSString stringWithFormat: @"%@.desc",dataKey] relativeToURL: base] retain];
 
 	/* Sane Defaults until we have actual data */
 
